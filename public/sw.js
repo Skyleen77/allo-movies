@@ -47,16 +47,19 @@ self.addEventListener('fetch', (event) => {
 // Gestion des notifications push
 self.addEventListener('push', (event) => {
   console.log('Push event', event);
-  // const data = event.data.json(); // Assurez-vous que le serveur envoie des données en JSON
-  // console.log('Push received', data);
-  // const { title, message, icon } = data;
-  const title = 'Test notification';
-  const message = 'Hello world!';
+  const data = event.data.json();
+  console.log('Push received', data);
+  const { title, message, icon } = data;
+
   const options = {
     body: message,
-    // icon: '/icons/android-chrome-192x192.png',
-    // badge: '/icons/android-chrome-192x192.png',
+    icon: icon || '/icons/android-chrome-192x192.png',
+    badge: '/icons/android-chrome-192x192.png',
   };
 
-  event.waitUntil(self.registration.showNotification(title, options));
+  try {
+    event.waitUntil(self.registration.showNotification(title, options));
+  } catch (error) {
+    console.error('Error handling push event:', error);
+  }
 });
