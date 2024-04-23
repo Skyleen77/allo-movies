@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -25,6 +26,14 @@ export default function Home({ movies }: { movies: any }) {
                 Des millions de films, émissions télévisées et artistes.
               </span>
             </h1>
+
+            <Button
+              onClick={() => fetch('/api/send-notification')}
+              variant="white"
+              className="mt-5"
+            >
+              Envoyer une notification
+            </Button>
           </div>
         </div>
       </div>
