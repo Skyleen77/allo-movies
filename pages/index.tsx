@@ -5,8 +5,17 @@ import {
   CardFooter,
   CardTitle,
 } from '../components/ui/card';
+import { client } from '@/lib/client';
 
-export default function Home({ movies }: { movies: any }) {
+export default function Home({
+  movies,
+}: {
+  movies: {
+    title: string;
+    image: string;
+    _id: string;
+  }[];
+}) {
   return (
     <main>
       <div className="relative h-[500px] bg-[url('/hero.jpg')]">
@@ -41,13 +50,13 @@ export default function Home({ movies }: { movies: any }) {
       <div className="grid grid-cols-2 gap-5 px-5 py-10 mx-auto md:grid-cols-4 sm:grid-cols-3 lg:grid-cols-5 max-w-7xl">
         {movies &&
           movies?.length &&
-          movies.map((movie: any) => (
-            <Card key={movie.imdbID} className="overflow-hidden">
+          movies.map((movie) => (
+            <Card key={movie._id} className="overflow-hidden">
               <CardContent className="p-0 pb-4">
-                <img src={movie.Poster} className="w-full" />
+                <img src={movie.image} alt={movie.title} className="w-full" />
               </CardContent>
               <CardFooter>
-                <CardTitle className="text-sm">{movie.Title}</CardTitle>
+                <CardTitle className="text-sm">{movie.title}</CardTitle>
               </CardFooter>
             </Card>
           ))}
@@ -57,14 +66,11 @@ export default function Home({ movies }: { movies: any }) {
 }
 
 export const getStaticProps = async () => {
-  const res = await fetch(
-    `https://www.omdbapi.com?s="batman"&apikey=${process.env.NEXT_PUBLIC_OPEN_API_KEY}`,
-  );
-  const data = await res.json();
+  const data = await client.fetch(`*[_type == "movies"]`);
 
   return {
     props: {
-      movies: data?.Search,
+      movies: data,
     },
   };
 };

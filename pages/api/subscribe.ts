@@ -1,5 +1,4 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import sanityClient from '@sanity/client';
 import { client } from '@/lib/client';
 
 export default async function handler(
