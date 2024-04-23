@@ -15,6 +15,8 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
+  console.log('ok send-notification.ts');
+
   const payload = JSON.stringify({
     title: 'Test Push',
     message: 'Hello, you have a new notification!',
