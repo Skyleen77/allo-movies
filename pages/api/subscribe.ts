@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import sanityClient from '@sanity/client';
+import { client } from '@/lib/client';
 
 export default async function handler(
   req: NextApiRequest,
@@ -10,15 +9,14 @@ export default async function handler(
   if (req.method === 'POST') {
     const { endpoint, keys } = req.body;
     try {
-      const subscription = await prisma.subscription.create({
-        data: {
-          endpoint,
-          keys,
-        },
+      await client.create({
+        _type: 'subscription',
+        endpoint,
+        keys,
       });
-      res.status(200).json({ message: 'Subscription accepted', subscription });
+      res.status(200).json({ message: 'Subscription saved' });
     } catch (error) {
-      console.error('Failed to save subscription', error);
+      console.error('Error saving subscription', error);
       res.status(500).json({ message: 'Failed to save subscription' });
     }
   } else {

@@ -1,8 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+import sanityClient from '@sanity/client';
 import webpush from 'web-push';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { client } from '@/lib/client';
 
 const publicVapidKey = process.env.NEXT_PUBLIC_VAPID_KEY!;
 const privateVapidKey = process.env.PRIVATE_VAPID_KEY!;
@@ -25,24 +24,23 @@ export default async function handler(
     });
 
     try {
-      const subscriptions = await prisma.subscription.findMany();
-      console.log('subscriptions', subscriptions);
-
-      subscriptions.forEach((subscription: any) => {
-        console.log('subscription', subscription);
-        webpush
-          .sendNotification(subscription, payload)
-          .then((result) => console.log('Notification sent', result))
-          .catch((error) => console.error('Error sending notification', error));
+      const query = '*[_type == "subscription"]';
+      const subscriptions = await client.fetch(query);
+      subscriptions.forEach(async (subscription: any) => {
+        try {
+          await webpush.sendNotification(subscription, payload);
+          console.log('Notification sent');
+        } catch (error) {
+          console.error('Error sending notification', error);
+        }
       });
-
       res.status(200).json({ message: 'Notifications sent' });
     } catch (error) {
-      console.error('Failed to fetch subscriptions', error);
-      res.status(500).json({ message: 'Failed to fetch subscriptions' });
+      console.error('Error fetching subscriptions', error);
+      res.status(500).json({ message: 'Failed to send notifications' });
     }
   } else {
-    res.setHeader('Allow', ['POST']);
+    res.setHeader('Allow', ['GET']);
     res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 }
