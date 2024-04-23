@@ -1,9 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import webpush from 'web-push';
-import fs from 'fs';
-import path from 'path';
+import { PrismaClient } from '@prisma/client';
 
-const SUBSCRIPTIONS_FILE_PATH = path.join(process.cwd(), 'subscriptions.json');
+const prisma = new PrismaClient();
 
 const publicVapidKey = process.env.NEXT_PUBLIC_VAPID_KEY!;
 const privateVapidKey = process.env.PRIVATE_VAPID_KEY!;
@@ -14,7 +13,10 @@ webpush.setVapidDetails(
   privateVapidKey,
 );
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse,
+) {
   if (req.method === 'GET') {
     const payload = JSON.stringify({
       title: 'Test Push',
@@ -22,23 +24,23 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       icon: '/icons/android-chrome-192x192',
     });
 
-    // Lire les abonnements à partir du fichier
-    const subscriptions = JSON.parse(
-      fs.readFileSync(SUBSCRIPTIONS_FILE_PATH, 'utf8'),
-    );
+    try {
+      const subscriptions = await prisma.subscription.findMany();
+      console.log('subscriptions', subscriptions);
 
-    console.log('subscriptions', subscriptions);
+      subscriptions.forEach((subscription: any) => {
+        console.log('subscription', subscription);
+        webpush
+          .sendNotification(subscription, payload)
+          .then((result) => console.log('Notification sent', result))
+          .catch((error) => console.error('Error sending notification', error));
+      });
 
-    // Envoyer des notifications à toutes les souscriptions stockées
-    subscriptions.forEach((subscription: any) => {
-      console.log('subscription', subscription);
-      webpush
-        .sendNotification(subscription, payload)
-        .then((result) => console.log('Notification sent', result))
-        .catch((error) => console.error('Error sending notification', error));
-    });
-
-    res.status(200).json({ message: 'Notifications sent' });
+      res.status(200).json({ message: 'Notifications sent' });
+    } catch (error) {
+      console.error('Failed to fetch subscriptions', error);
+      res.status(500).json({ message: 'Failed to fetch subscriptions' });
+    }
   } else {
     res.setHeader('Allow', ['POST']);
     res.status(405).end(`Method ${req.method} Not Allowed`);
