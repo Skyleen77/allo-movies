@@ -10,6 +10,8 @@ function saveSubscriptionToFile(subscription: any) {
     ? JSON.parse(fs.readFileSync(SUBSCRIPTIONS_FILE_PATH, 'utf8'))
     : [];
 
+  console.log('currentSubscriptions', currentSubscriptions);
+
   // Ajouter la nouvelle souscription
   currentSubscriptions.push(subscription);
 

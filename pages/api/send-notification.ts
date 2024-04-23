@@ -9,7 +9,7 @@ const publicVapidKey = process.env.NEXT_PUBLIC_VAPID_KEY!;
 const privateVapidKey = process.env.PRIVATE_VAPID_KEY!;
 
 webpush.setVapidDetails(
-  'mailto:your-email@example.com',
+  'mailto:exemple@example.com',
   publicVapidKey,
   privateVapidKey,
 );
@@ -19,7 +19,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     const payload = JSON.stringify({
       title: 'Test Push',
       message: 'Hello, you have a new notification!',
-      icon: '/icons/icon-192x192.png',
+      icon: '/icons/android-chrome-192x192',
     });
 
     // Lire les abonnements à partir du fichier
@@ -27,8 +27,11 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       fs.readFileSync(SUBSCRIPTIONS_FILE_PATH, 'utf8'),
     );
 
+    console.log('subscriptions', subscriptions);
+
     // Envoyer des notifications à toutes les souscriptions stockées
     subscriptions.forEach((subscription: any) => {
+      console.log('subscription', subscription);
       webpush
         .sendNotification(subscription, payload)
         .then((result) => console.log('Notification sent', result))
